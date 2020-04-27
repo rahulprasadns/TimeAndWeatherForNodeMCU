@@ -1,5 +1,5 @@
 /*
-Подключения:
+Connections:
 NodeMCU    -> Matrix
 MOSI-D7-GPIO13  -> DIN
 CLK-D5-GPIO14   -> Clk
@@ -15,7 +15,7 @@ GPIO0-D3   -> LOAD
 #include <RTClib.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
-#include <ArduinoOTA.h> // Библиотека для OTA-прошивки
+#include <ArduinoOTA.h> // Library for OTA firmware
 #include <Twitter.h>
 
 
@@ -23,10 +23,10 @@ GPIO0-D3   -> LOAD
 // Конфигурация устройства:
 // =======================================================================
 const char* ssid     = "myhome";     // SSID
-const char* password = "VeeR.RohiT@99";   // пароль
-String weatherKey = "55f19306263cb89ee4cf375e64cbbf45";  // Чтобы получить API ключь, перейдите по ссылке http://openweathermap.org/api
+const char* password = "VeeR.RohiT@99";   // Wi-Fi Password
+String weatherKey = "55f19306263cb89ee4cf375e64cbbf45";  // weather API key from http://openweathermap.org/api
 String weatherLang = "&lang=en";
-String cityID = "Elamanchili,In"; //Barnaul
+String cityID = "Elamanchili,In"; //City name
 String lat = "17.44535389";
 String lon = "78.38076389";
 
@@ -74,43 +74,43 @@ int flag=0;
 long period;
 int offset=1,refresh=0;
 int pinCS = 2; // Подключение пина CS
-int numberOfHorizontalDisplays = 4; // Количество светодиодных матриц по Горизонтали
-int numberOfVerticalDisplays = 1; // Количество светодиодных матриц по Вертикали
+int numberOfHorizontalDisplays = 4; // Number of Horizontal LED Arrays
+int numberOfVerticalDisplays = 1; // Number of Vertical LED Arrays
 String decodedMsg;
 Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
 RTC_DS1307 rtc;
 
-int wait = 50; // скорость бегущей строки
+int wait = 50; //creeping line speed
 
 int spacer = 2;
-int width = 5 + spacer; // Регулируем расстояние между символами
+int width = 5 + spacer; //Adjust the distance between characters
 
 void setup(void) {
 
 matrix.cp437(true);
-matrix.setIntensity(7); // Яркость матрицы от 0 до 15
+matrix.setIntensity(7); //Matrix brightness from 0 to 15
 
 
 
 // начальные координаты матриц 8*8
-  matrix.setRotation(3, 1);   // 1 матрица
-  matrix.setRotation(2, 1);   // 2 матрица
-  matrix.setRotation(1, 1);   // 3 матрица
-  matrix.setRotation(0, 1);   // 4 матрица
+  matrix.setRotation(3, 1);   // 1 Matrix
+  matrix.setRotation(2, 1);   // 2 Matrix
+  matrix.setRotation(1, 1);   // 3 Matrix
+  matrix.setRotation(0, 1);   // 4 Matrix
 
 
-  Serial.begin(115200);    // Дебаг
+  Serial.begin(115200);    // Debug Serial
   WiFi.mode(WIFI_STA);    
-  WiFi.begin(ssid, password); // Подключаемся к WIFI
-  while (WiFi.status() != WL_CONNECTED) {    // Ждем до посинения
+  WiFi.begin(ssid, password); //Connect to WIFI
+  while (WiFi.status() != WL_CONNECTED) {    // Waiting to Connect
     delay(500);
     Serial.print(".");
     matrix.print(".");
   }
 
-ArduinoOTA.setHostname("CLOCK"); // Задаем имя сетевого порта
-//ArduinoOTA.setPassword((const char *)"0000"); // Задаем пароль доступа для удаленной прошивки
-ArduinoOTA.begin(); // Инициализируем OTA
+ArduinoOTA.setHostname("CLOCK"); // Set the network port name
+//ArduinoOTA.setPassword((const char *)"0000"); //Set an access password for remote firmware
+ArduinoOTA.begin(); // Initializing OTA
 }
 
 // =======================================================================
@@ -129,9 +129,9 @@ int h,m,s;
 // =======================================================================
 void loop(void) {
 
-ArduinoOTA.handle(); // Всегда готовы к прошивке
+ArduinoOTA.handle(); // Always ready for firmware
 
-if(updCnt<=0) { // каждые 10 циклов получаем данные времени и погоды
+if(updCnt<=0) { //every 10 cycles we get time and weather data
     updCnt = 10;
     getTime();
     getWeatherData();
@@ -189,7 +189,7 @@ void DisplayTime(){
     
 
     
-    if(s & 1)raz=":"; //каждую четную секунду печатаем двоеточие по центру (чтобы мигало)
+    if(s & 1)raz=":"; //For every even second we print a colon in the center (to blink)
     else raz=" ";
     
     String hour1 = String (h/10);
@@ -215,10 +215,10 @@ void DisplayText(String text){
     
     int letter =(matrix.width())- i * (width-1);
     int x = (matrix.width() +1) -letter;
-    int y = (matrix.height() - 8) / 2; // Центрируем текст по Вертикали
+    int y = (matrix.height() - 8) / 2; //Center text vertically
     matrix.drawChar(x, y, text[i], HIGH, LOW, 1);
     
-    matrix.write(); // Вывод на дисплей
+    matrix.write(); // Display output
     
     }
 
@@ -233,7 +233,7 @@ void ScrollText (String text){
     int letter = i / width;
    // int x =  1 - i % width;
     int x = (matrix.width() - 1) - i % width;
-    int y = (matrix.height() - 8) / 2; // Центрируем текст по Вертикали
+    int y = (matrix.height() - 8) / 2; // Center text vertically
  
     while ( x + width - spacer >= 0 && letter >= 0 ) {
 if ( letter < text.length() ) {
@@ -242,14 +242,14 @@ if ( letter < text.length() ) {
 letter--;
 x -= width;
     }
-    matrix.write(); // Вывод на дисплей
+    matrix.write(); // Display output
     delay(wait);
   }
 }
 
 
 // =======================================================================
-// Берем погоду с сайта openweathermap.org
+// Take the weather from openweathermap.org
 // =======================================================================
 
 
@@ -331,10 +331,10 @@ Pressure = pressure;
 }
 
 // =======================================================================
-// Берем время у GOOGLE
+//Take time from GOOGLE
 // =======================================================================
 
-float utcOffset = 5.50; //поправка часового пояса
+float utcOffset = 5.50; //Time zone correction
 long localEpoc = 0;
 long localMillisAtUpdate = 0;
 
@@ -372,7 +372,7 @@ s = line.substring(29, 31).toInt();
 localMillisAtUpdate = millis();
 localEpoc = (h * 60 * 60 + m * 60 + s);
 
-// переводим на русский названия дней недели
+// Translate to Eng
 if (week == "MON") week = "MON";
 if (week == "TUE") week = "TUE";
 if (week == "WED") week = "WED";
@@ -381,7 +381,6 @@ if (week == "FRI") week = "FRI";
 if (week == "SAT") week = "SAT";
 if (week == "SUN") week = "SUN";
 
-// переводим на русский названия месяцев
 if (mont == "JAN") mont = "JAN";
 if (mont == "FEB") mont = "FEB";
 if (mont == "MAR") mont = "MAR";
